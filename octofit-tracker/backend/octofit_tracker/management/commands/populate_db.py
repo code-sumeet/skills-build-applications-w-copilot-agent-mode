@@ -4,13 +4,18 @@ from octofit_tracker.models import User, Team, Activity, Leaderboard, Workout
 class Command(BaseCommand):
     help = 'Populate the octofit_db database with test data'
 
+
     def handle(self, *args, **kwargs):
-        # Delete existing data
-        User.objects.all().delete()
-        Team.objects.all().delete()
-        Activity.objects.all().delete()
+        # Delete existing data in child-to-parent order to avoid ObjectId unhashable errors
         Leaderboard.objects.all().delete()
+        Activity.objects.all().delete()
         Workout.objects.all().delete()
+        # Use raw MongoDB deletion for User and Team to avoid unhashable ObjectId errors
+        from pymongo import MongoClient
+        client = MongoClient('mongodb://localhost:27017')
+        db = client['octofit_db']
+        db['user'].delete_many({})
+        db['team'].delete_many({})
 
         # Create Teams
         marvel = Team.objects.create(name='Marvel')

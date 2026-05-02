@@ -31,11 +31,16 @@ router.register(r'activities', views.ActivityViewSet, basename='activity')
 router.register(r'workouts', views.WorkoutViewSet, basename='workout')
 router.register(r'leaderboard', views.LeaderboardViewSet, basename='leaderboard')
 
+
 # API root with dynamic codespace URL
 @api_view(['GET'])
 def api_root(request, format=None):
+    import os
     codespace_name = os.environ.get('CODESPACE_NAME', 'localhost')
-    base_url = f"https://{codespace_name}-8000.app.github.dev" if codespace_name != 'localhost' else "http://localhost:8000"
+    if codespace_name and codespace_name != 'localhost':
+        base_url = f"https://{codespace_name}-8000.app.github.dev"
+    else:
+        base_url = "http://localhost:8000"
     return Response({
         'users': f"{base_url}/api/users/",
         'teams': f"{base_url}/api/teams/",
